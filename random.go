@@ -1,4 +1,4 @@
-// V0.9.1a
+// V0.9.2
 // Author: Diehl E.
 // (C) Sony Pictures Entertainment, Sep 2020
 
@@ -8,10 +8,9 @@ import (
 	"encoding/csv"
 	"math/rand"
 	"os"
+	"path"
 	"path/filepath"
 	"time"
-
-	"github.com/wunderbarb/mypkg/toolbox"
 )
 
 // Rng is a randomly seeded random number generator that can be used for tests.
@@ -143,7 +142,7 @@ func RandomAlphaString(size int, t AlphaNumType) string {
 // of `columns` x `rows` using as separator `sep` with
 // random size fields.
 func RandomCSVFile(name string, columns int, rows int, sep rune) error {
-	name = toolbox.SetExtension(name, "csv")
+	name = setExtension(name, "csv")
 	f, err := os.Create(name)
 	if err != nil {
 		return err
@@ -200,7 +199,7 @@ func RandomFile(size int, ext string, inTestdata bool) (string, error) {
 //
 // It returns the name of the generated file (without) the path.
 func RandomFileWithDir(size int, ext string, path string) (string, error) {
-	name := toolbox.SetExtension(RandomID(), ext)
+	name := setExtension(RandomID(), ext)
 	if path != "" {
 		name = filepath.Join(path, name)
 	}
@@ -217,4 +216,41 @@ func RandomFileWithDir(size int, ext string, path string) (string, error) {
 		}
 	}
 	return filepath.Base(f.Name()), nil
+}
+
+// setExtension ensures that the extension ext is present at
+// the end of the file.  If ext does not have a trailing '.', it adds
+// the proper extension.
+//
+// Is the same than mypkg/setExtension but need to break cyclic mod.
+func setExtension(name string, ext string) string {
+	if ext == "" {
+		return name
+	}
+	if ext[:1] != "." {
+		ext = "." + ext
+	}
+	return strip(name, ext) + ext
+}
+
+// strip removes the extension if present.
+// @1- ext is the extension to test.  If there is no trailing
+// '.', it is added.
+// returns the file name without the extension if present.
+//
+// Is the same than mypkg/strip but need to break cyclic mod.
+func strip(name string, ext string) string {
+	if ext == "" {
+		return name
+	}
+	if ext[:1] != "." {
+		ext = "." + ext
+	}
+	if path.Ext(name) == ext {
+
+		s := name
+		l := len(name) - len(ext)
+		name = s[:l]
+	}
+	return name
 }

@@ -1,0 +1,5 @@
+# Specify filepatterns you want git to ignore.
+
+cover
+coverage.html
+go.sum

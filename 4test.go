@@ -1,6 +1,6 @@
-// V 0.8.1
+// V 0.8.2
 // Author: DIEHL E.
-// (C) Sony Pictures Entertainment, Apr 2020
+// (C) Sony Pictures Entertainment, Nov 2020
 
 package test
 
@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/udhos/equalfile"
 )
 
@@ -21,6 +23,9 @@ var (
 // CLI executes the command `app` with the parameters `params`.
 // `expErr` indicates whether an error is expected.  If the expectation
 // is not met, then it outputs the full CLI command that failed.
+//
+// DEPRECATED CLI should be repalced by githyb.com/wunderbarb/syst.Run using
+// option WithVerboseTest.
 func CLI(expErr bool, app string, params ...string) ([]byte, error) {
 	cmd := exec.Command(app, params...)
 	answer, err := cmd.Output()
@@ -42,8 +47,10 @@ func CompareFiles(f1 string, f2 string) bool {
 }
 
 // Describe displays the order of the test, the name of the function
-//  and its optional description provided by 'msg'.
-func Describe(t *testing.T, msg ...string) {
+//  and its optional description provided by 'msg'.  It initializes an assert
+// and a require and returns them.
+func Describe(t *testing.T, msg ...string) (*require.Assertions,
+	*assert.Assertions) {
 
 	dispMsg := ""
 	if len(msg) != 0 {
@@ -52,4 +59,5 @@ func Describe(t *testing.T, msg ...string) {
 	name := strings.TrimPrefix(t.Name(), "Test_")
 	fmt.Printf("Test %d: %s %s\n", testCounter, name, dispMsg)
 	testCounter++
+	return require.New(t), assert.New(t)
 }

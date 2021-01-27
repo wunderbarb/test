@@ -171,7 +171,7 @@ func RandomCSVFile(name string, columns int, rows int, sep rune) error {
 // is in "testdata/" subdirectory, else in the current directory.  It
 // returns the name of the generated file.
 //
-// DEPRECATED:  should be replaced by RandomFileWithDir.
+// Deprecated:  should be replaced by RandomFileWithDir.
 func RandomFile(size int, ext string, inTestdata bool) (string, error) {
 	name := RandomID() + "." + ext
 	if inTestdata {

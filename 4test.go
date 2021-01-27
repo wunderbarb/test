@@ -1,6 +1,6 @@
-// V 0.8.2
+// V 0.9.0
 // Author: DIEHL E.
-// (C) Sony Pictures Entertainment, Nov 2020
+// (C) Sony Pictures Entertainment, Jan 2021
 
 package test
 
@@ -60,4 +60,17 @@ func Describe(t *testing.T, msg ...string) (*require.Assertions,
 	fmt.Printf("Test %d: %s %s\n", testCounter, name, dispMsg)
 	testCounter++
 	return require.New(t), assert.New(t)
+}
+
+// Describeb displays the order of the test, the name of the function
+//  and its optional description provided by 'msg'.
+func Describeb(b *testing.B, msg ...string) {
+
+	dispMsg := ""
+	if len(msg) != 0 {
+		dispMsg = msg[0]
+	}
+	name := strings.TrimPrefix(b.Name(), "Bench_")
+	fmt.Printf("Bench %d: %s %s\n", testCounter, name, dispMsg)
+	testCounter++
 }

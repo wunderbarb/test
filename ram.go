@@ -1,4 +1,4 @@
-// V 0.8.2
+// V 0.8.2a
 // Author: DIEHL E.
 // (C) Sony Pictures Entertainment, Apr 2020
 
@@ -96,6 +96,7 @@ func (ramr *RAMReader) Read(b []byte) (n int, err error) {
 
 // ErrReader is an io.Reader that returns an error
 // when called.
+// Deprecated: replaced by FaultyReader
 type ErrReader struct{}
 
 func (er ErrReader) Read(p []byte) (n int, err error) {

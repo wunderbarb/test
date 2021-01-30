@@ -1,6 +1,6 @@
-// V 0.8.2a
+// V 0.8.3
 // Author: DIEHL E.
-// (C) Sony Pictures Entertainment, Apr 2020
+// (C) Sony Pictures Entertainment, Jan 2021
 
 package test
 
@@ -56,7 +56,7 @@ func (ramw *RAMWriter) Writer() *bufio.Writer {
 	return ramw.bio
 }
 
-// RAMReader is an emulation of bufio.Reader  and io.Reader
+// RAMReader is an emulation of bufio.Reader  and io.ReadCloser
 // stored in RAM. It is mainly for test purpose.
 type RAMReader struct {
 	b   *bytes.Buffer
@@ -87,6 +87,11 @@ func NewRAMReaderFromString(m string) *RAMReader {
 // Reader returns the pointer to the bufio.Reader.
 func (ramr *RAMReader) Reader() *bufio.Reader {
 	return ramr.bio
+}
+
+// Close implements io.Closer interface
+func (ramr *RAMReader) Close() error {
+	return nil
 }
 
 // Read is the io.Reader interface implementation.

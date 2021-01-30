@@ -1,4 +1,4 @@
-// v0.1.2
+// v0.1.3
 // Author: DIEHL E.
 // (C) Sony Pictures Entertainment, Jan 2021
 
@@ -15,7 +15,7 @@ func Test_Bench(t *testing.T) {
 	br, err := Bench(3, benched1)
 	fmt.Println(br.String())
 	require.NoError(err)
-	br1, err := Bench(5, benched2)
+	br1, err := Bench(5, benched2, WithVerboseIteration())
 	fmt.Println(br1.String())
 	require.NoError(err)
 	assert.True(br.Speed < br1.Speed)

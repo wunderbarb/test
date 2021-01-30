@@ -1,4 +1,5 @@
-// v0.1.0
+// v0.2.0
+// (C) Sony Pictures Entertainment, Jan 2021
 
 package test
 
@@ -9,11 +10,16 @@ var (
 	ErrMock = errors.New("tis is an error voluntarily generated")
 )
 
-// FaultyReader implements the io.Reader interface but fails when used.
+// FaultyReader implements the io.ReadCloser interface but fails when used.
 type FaultyReader struct {
 }
 
 // Read fails systematically.
 func (fr FaultyReader) Read(p []byte) (n int, err error) {
 	return 0, ErrMock
+}
+
+// Close fails systematically.
+func (fr FaultyReader) Close() error {
+	return ErrMock
 }

@@ -1,6 +1,6 @@
-// V 0.8.3
+// V 0.9.0
 // Author: DIEHL E.
-// (C) Sony Pictures Entertainment, Jan 2021
+// (C) Sony Pictures Entertainment, Feb 2021
 
 package test
 
@@ -59,16 +59,14 @@ func (ramw *RAMWriter) Writer() *bufio.Writer {
 // RAMReader is an emulation of bufio.Reader  and io.ReadCloser
 // stored in RAM. It is mainly for test purpose.
 type RAMReader struct {
-	b   *bytes.Buffer
+	b   *bytes.Reader
 	bio *bufio.Reader
 }
 
 // NewRAMReader initializes a new RAMReader with the information in `data`.
 func NewRAMReader(data []byte) *RAMReader {
 	var ramr RAMReader
-	var buf []byte
-	ramr.b = bytes.NewBuffer(buf)
-	ramr.b.Write(data)
+	ramr.b = bytes.NewReader(data)
 	ramr.bio = bufio.NewReader(ramr.b)
 	return &ramr
 }
@@ -77,9 +75,7 @@ func NewRAMReader(data []byte) *RAMReader {
 // the string `m`
 func NewRAMReaderFromString(m string) *RAMReader {
 	var ramr RAMReader
-	var buf []byte
-	ramr.b = bytes.NewBuffer(buf)
-	ramr.b.WriteString(m)
+	ramr.b = bytes.NewReader([]byte(m))
 	ramr.bio = bufio.NewReader(ramr.b)
 	return &ramr
 }
@@ -97,6 +93,12 @@ func (ramr *RAMReader) Close() error {
 // Read is the io.Reader interface implementation.
 func (ramr *RAMReader) Read(b []byte) (n int, err error) {
 	return ramr.b.Read(b)
+}
+
+// Seek implements the io.Seeker interface.
+func (ramr *RAMReader) Seek(offset int64, whence int) (int64, error) {
+	return ramr.b.Seek(offset, whence)
+
 }
 
 // ErrReader is an io.Reader that returns an error

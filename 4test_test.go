@@ -1,28 +1,25 @@
-// V0.7.1
+// V0.7.2
 // Author: DIEHL E.
-// (C) Sony Pictures Entertainment, Apr 2020
+// (C) Sony Pictures Entertainment, Feb 2021
 
 package test
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	// "github.com/stretchr/testify/require"
 )
 
 func Test_CLI(t *testing.T) {
-	Describe(t)
+	_, assert := Describe(t)
 
 	_, err := CLI(false, "ls")
-	assert.NoError(t, err)
+	assert.NoError(err)
 	_, err = CLI(false, "ls", "~/Dev1")
-	assert.Error(t, err)
+	assert.Error(err)
 }
 
 func Test_CompareFiles(t *testing.T) {
-	Describe(t)
+	_, assert := Describe(t)
 
-	assert.True(t, CompareFiles("4test.go", "4test.go"))
-	assert.False(t, CompareFiles("4test.go", "random.go"))
+	assert.True(CompareFiles("4test.go", "4test.go"))
+	assert.False(CompareFiles("4test.go", "random.go"))
 }

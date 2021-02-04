@@ -1,60 +1,57 @@
-// V0.7.1
+// V0.7.4
 // Author: DIEHL E.
-// (C) Sony Pictures Entertainment, Apr 2020
+// (C) Sony Pictures Entertainment, Feb 2021
 
 package test
 
 import (
 	"io"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func Test_RamWriter(t *testing.T) {
-	Describe(t, "RamWriter")
+	require, assert := Describe(t)
 	text := RandomString(0)
 
 	ramw := NewRAMWriter()
 	bio := ramw.Writer()
 	_, err := bio.WriteString(text)
-	require.NoError(t, err)
-	assert.Equal(t, text, ramw.AsString())
-	assert.Equal(t, []byte(text), ramw.AsBytes())
+	require.NoError(err)
+	assert.Equal(text, ramw.AsString())
+	assert.Equal([]byte(text), ramw.AsBytes())
 }
 
 func Test_RamReader(t *testing.T) {
-	Describe(t, "RAMReader")
+	require, assert := Describe(t)
 	text := RandomString(0) + "\n"
 
 	ramr := NewRAMReader([]byte(text))
 	bio := ramr.Reader()
 
 	data, err := bio.ReadString('\n')
-	require.NoError(t, err)
-	assert.Equal(t, text, data)
+	require.NoError(err)
+	assert.Equal(text, data)
 
 }
 
 func Test_RamReaderFromString(t *testing.T) {
-	Describe(t, "RAMReaderFromString")
+	require, assert := Describe(t)
 	text := RandomString(0) + "\n"
 
 	ramr := NewRAMReaderFromString(text)
 	bio := ramr.Reader()
 
 	data, err := bio.ReadString('\n')
-	require.NoError(t, err)
-	assert.Equal(t, text, data)
+	require.NoError(err)
+	assert.Equal(text, data)
 
 }
 
 func Test_ErrReader(t *testing.T) {
-	Describe(t)
+	_, assert := Describe(t)
 
 	var er ErrReader
-	assert.Error(t, fake(er))
+	assert.Error(fake(er))
 }
 
 func fake(rd io.Reader) error {

@@ -1,6 +1,6 @@
-// V 0.6.2
+// V 0.7.0
 // Author: DIEHL E.
-// (C) Sony Pictures Entertainment, Sep 2020
+// (C) Sony Pictures Entertainment, Feb 2021
 
 package test
 
@@ -110,4 +110,19 @@ func Test_RandomFileWithDir(t *testing.T) {
 
 	_, err = RandomFileWithDir(3, "essai", "testdata/bad")
 	assert.Error(t, err)
+}
+
+func Benchmark_RandomSlice(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		RandomSlice(1024)
+	}
+
+}
+
+func Benchmark_RandomFile(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		n, _ := RandomFileWithDir(10, "tst", "testdata/essai")
+		os.Remove(filepath.Join("testdata/essai", n))
+	}
+
 }

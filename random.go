@@ -1,6 +1,6 @@
-// V0.9.2
+// V0.9.5
 // Author: Diehl E.
-// (C) Sony Pictures Entertainment, Sep 2020
+// (C) Sony Pictures Entertainment, Feb 2021
 
 package test
 
@@ -73,15 +73,14 @@ func RandomName(size int) string {
 //
 // CAUTION: the randomness is not cryptographically secure, thus it should
 // not be used for generating keys.  Secure keys are generated using
-// mypckg/cryptobox package with GenerateNewKey
+// wunderbarb/crypto package with GenerateNewKey
 func RandomSlice(size int) []byte {
+
 	if size == 0 {
 		size = Rng.Intn(256) + 1
 	}
-	var buffer []byte
-	for i := 0; i < size; i++ {
-		buffer = append(buffer, byte(Rng.Intn(255)))
-	}
+	buffer := make([]byte, size)
+	Rng.Read(buffer)
 	return buffer
 }
 
@@ -209,8 +208,10 @@ func RandomFileWithDir(size int, ext string, path string) (string, error) {
 	}
 	defer f.Close()
 
+	p := make([]byte, 1024)
 	for i := 0; i < size; i++ {
-		_, err = f.Write(RandomSlice(1024))
+		Rng.Read(p)
+		_, err = f.Write(p)
 		if err != nil {
 			return "", err
 		}

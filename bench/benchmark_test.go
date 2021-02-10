@@ -14,32 +14,6 @@ import (
 	"time"
 )
 
-// var prettyPrintTests = []struct {
-// 	v        float64
-// 	expected string
-// }{
-// 	{0, "         0 x"},
-// 	{1234.1, "      1234 x"},
-// 	{-1234.1, "     -1234 x"},
-// 	{99.950001, "       100 x"},
-// 	{99.949999, "        99.9 x"},
-// 	{9.9950001, "        10.0 x"},
-// 	{9.9949999, "         9.99 x"},
-// 	{-9.9949999, "        -9.99 x"},
-// 	{0.0099950001, "         0.0100 x"},
-// 	{0.0099949999, "         0.00999 x"},
-// }
-
-// func TestPrettyPrint(t *testing.T) {
-// 	for _, tt := range prettyPrintTests {
-// 		buf := new(strings.Builder)
-// 		testing.PrettyPrint(buf, tt.v, "x")
-// 		if tt.expected != buf.String() {
-// 			t.Errorf("prettyPrint(%v): expected %q, actual %q", tt.v, tt.expected, buf.String())
-// 		}
-// 	}
-// }
-
 func TestResultString(t *testing.T) {
 	// Test fractional ns/op handling
 	r := testing.BenchmarkResult{

@@ -3,15 +3,15 @@
 // license that can be found in the LICENSE file.
 
 // Modified  by DIEHL E.
-// v0.1.2
+// v0.2.2
 
 package bench
 
 import (
+	"encoding/csv"
 	"fmt"
 	"io"
 	"math"
-	"sort"
 	"strings"
 	"time"
 )
@@ -74,6 +74,18 @@ func (r BenchmarkResult) AllocedBytesPerOp() int64 {
 	return int64(r.MemBytes) / int64(r.N)
 }
 
+// CSV writes in the CSV file the follwoing record: `name`, number of iterations, number of ns per
+// operation, number of allocated bytes per operation and number of Allocs per operation.
+func (r BenchmarkResult) CSV(name string, wr *csv.Writer) error {
+	var record []string
+	record = append(record, name)
+	record = append(record, fmt.Sprintf("%d", r.N))
+	record = append(record, fmt.Sprintf("%d", r.NsPerOp()))
+	record = append(record, fmt.Sprintf("%d", r.AllocedBytesPerOp()))
+	record = append(record, fmt.Sprintf("%d", r.AllocsPerOp()))
+	return wr.Write(record)
+}
+
 // String returns a summary of the benchmark results.
 // It follows the benchmark result line format from
 // https://golang.org/design/14313-benchmark-format, not including the
@@ -83,38 +95,22 @@ func (r BenchmarkResult) AllocedBytesPerOp() int64 {
 // by MemString.
 func (r BenchmarkResult) String() string {
 	buf := new(strings.Builder)
-	fmt.Fprintf(buf, "%8d", r.N)
+	fmt.Fprintf(buf, "%8d\t", r.N)
+	ns := r.NsPerOp()
+	switch {
+	case ns <= 1000:
+		fmt.Fprintf(buf, "%d ns/op", ns)
+	case ns <= 1000000:
+		nn := float64(ns) / 1000.0
+		fmt.Fprintf(buf, "%.3f us/op", nn)
+	case ns <= 1000000000:
+		nn := float64(ns) / 1000000.0
+		fmt.Fprintf(buf, "%.3f ms/op", nn)
+	default:
+		nn := float64(ns) / 1000000000.0
+		fmt.Fprintf(buf, "%.3f s/op", nn)
+	}
 
-	// Get ns/op as a float.
-	ns, ok := r.Extra["ns/op"]
-	if !ok {
-		ns = float64(r.T.Nanoseconds()) / float64(r.N)
-	}
-	if ns != 0 {
-		buf.WriteByte('\t')
-		prettyPrint(buf, ns, "ns/op")
-	}
-
-	if mbs := r.mbPerSec(); mbs != 0 {
-		fmt.Fprintf(buf, "\t%7.2f MB/s", mbs)
-	}
-
-	// Print extra metrics that aren't represented in the standard
-	// metrics.
-	var extraKeys []string
-	for k := range r.Extra {
-		switch k {
-		case "ns/op", "MB/s", "B/op", "allocs/op":
-			// Built-in metrics reported elsewhere.
-			continue
-		}
-		extraKeys = append(extraKeys, k)
-	}
-	sort.Strings(extraKeys)
-	for _, k := range extraKeys {
-		buf.WriteByte('\t')
-		prettyPrint(buf, r.Extra[k], k)
-	}
 	return buf.String()
 }
 

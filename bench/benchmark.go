@@ -663,6 +663,9 @@ func Benchmark(f func(b *B), options ...BenchmarkOption) BenchmarkResult {
 		b.run()
 	}
 	if b.result.N >= opts.atLeast {
+		if opts.csv != nil {
+			b.result.CSV(opts.benchName, opts.csv)
+		}
 		return b.result
 	}
 
@@ -675,6 +678,9 @@ func Benchmark(f func(b *B), options ...BenchmarkOption) BenchmarkResult {
 		benchTime: benchTimeFlag{n: opts.atLeast},
 	}
 	b1.run()
+	if opts.csv != nil {
+		b1.result.CSV(opts.benchName, opts.csv)
+	}
 	return b1.result
 }
 

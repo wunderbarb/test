@@ -5,7 +5,7 @@
 // Modified  by DIEHL E.
 // v0.1.0
 
-package testing
+package bench
 
 import (
 	"flag"
@@ -486,11 +486,11 @@ type benchContext struct {
 	extLen int // Maximum extension length.
 }
 
-// RunBenchmarks is an internal function but exported because it is cross-package;
-// it is part of the implementation of the "go test" command.
-func RunBenchmarks(matchString func(pat, str string) (bool, error), benchmarks []InternalBenchmark) {
-	runBenchmarks("", matchString, benchmarks)
-}
+// // RunBenchmarks is an internal function but exported because it is cross-package;
+// // it is part of the implementation of the "go test" command.
+// func RunBenchmarks(matchString func(pat, str string) (bool, error), benchmarks []InternalBenchmark) {
+// 	runBenchmarks("", matchString, benchmarks)
+// }
 
 func runBenchmarks(importPath string, matchString func(pat, str string) (bool, error), benchmarks []InternalBenchmark) bool {
 	// If no flag was specified, don't run benchmarks.
@@ -708,11 +708,13 @@ type PB struct {
 func (pb *PB) Next() bool {
 	if pb.cache == 0 {
 		n := atomic.AddUint64(pb.globalN, pb.grain)
-		if n <= pb.bN {
+		switch {
+
+		case n <= pb.bN:
 			pb.cache = pb.grain
-		} else if n < pb.bN+pb.grain {
+		case n < pb.bN+pb.grain:
 			pb.cache = pb.bN + pb.grain - n
-		} else {
+		default:
 			return false
 		}
 	}

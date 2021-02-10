@@ -4,7 +4,7 @@
 
 // Support for test coverage.
 
-package testing
+package bench
 
 import (
 	"fmt"

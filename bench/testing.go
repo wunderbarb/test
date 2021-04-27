@@ -10,126 +10,6 @@
 // serves to identify the test routine.
 //
 
-// Benchmarks
-//
-// Functions of the form
-//     func BenchmarkXxx(*testing.B)
-// are considered benchmarks, and are executed by the "go test" command when
-// its -bench flag is provided. Benchmarks are run sequentially.
-//
-// For a description of the testing flags, see
-// https://golang.org/cmd/go/#hdr-Testing_flags
-//
-// A sample benchmark function looks like this:
-//     func BenchmarkRandInt(b *testing.B) {
-//         for i := 0; i < b.N; i++ {
-//             rand.Int()
-//         }
-//     }
-//
-// The benchmark function must run the target code b.N times.
-// During benchmark execution, b.N is adjusted until the benchmark function lasts
-// long enough to be timed reliably. The output
-//     BenchmarkRandInt-8   	68453040	        17.8 ns/op
-// means that the loop ran 68453040 times at a speed of 17.8 ns per loop.
-//
-// If a benchmark needs some expensive setup before running, the timer
-// may be reset:
-//
-//     func BenchmarkBigLen(b *testing.B) {
-//         big := NewBig()
-//         b.ResetTimer()
-//         for i := 0; i < b.N; i++ {
-//             big.Len()
-//         }
-//     }
-//
-// If a benchmark needs to test performance in a parallel setting, it may use
-// the RunParallel helper function; such benchmarks are intended to be used with
-// the go test -cpu flag:
-//
-//     func BenchmarkTemplateParallel(b *testing.B) {
-//         templ := template.Must(template.New("test").Parse("Hello, {{.}}!"))
-//         b.RunParallel(func(pb *testing.PB) {
-//             var buf bytes.Buffer
-//             for pb.Next() {
-//                 buf.Reset()
-//                 templ.Execute(&buf, "World")
-//             }
-//         })
-//     }
-//
-// Examples
-//
-// The package also runs and verifies example code. Example functions may
-// include a concluding line comment that begins with "Output:" and is compared with
-// the standard output of the function when the tests are run. (The comparison
-// ignores leading and trailing space.) These are examples of an example:
-//
-//     func ExampleHello() {
-//         fmt.Println("hello")
-//         // Output: hello
-//     }
-//
-//     func ExampleSalutations() {
-//         fmt.Println("hello, and")
-//         fmt.Println("goodbye")
-//         // Output:
-//         // hello, and
-//         // goodbye
-//     }
-//
-// The comment prefix "Unordered output:" is like "Output:", but matches any
-// line order:
-//
-//     func ExamplePerm() {
-//         for _, value := range Perm(5) {
-//             fmt.Println(value)
-//         }
-//         // Unordered output: 4
-//         // 2
-//         // 1
-//         // 3
-//         // 0
-//     }
-//
-// Example functions without output comments are compiled but not executed.
-//
-// The naming convention to declare examples for the package, a function F, a type T and
-// method M on type T are:
-//
-//     func Example() { ... }
-//     func ExampleF() { ... }
-//     func ExampleT() { ... }
-//     func ExampleT_M() { ... }
-//
-// Multiple example functions for a package/type/function/method may be provided by
-// appending a distinct suffix to the name. The suffix must start with a
-// lower-case letter.
-//
-//     func Example_suffix() { ... }
-//     func ExampleF_suffix() { ... }
-//     func ExampleT_suffix() { ... }
-//     func ExampleT_M_suffix() { ... }
-//
-// The entire test file is presented as the example when it contains a single
-// example function, at least one other function, type, variable, or constant
-// declaration, and no test or benchmark functions.
-//
-// Skipping
-//
-// Tests or benchmarks may be skipped at run time with a call to
-// the Skip method of *T or *B:
-//
-//     func TestTimeConsuming(t *testing.T) {
-//         if testing.Short() {
-//             t.Skip("skipping test in short mode.")
-//         }
-//         ...
-//     }
-//
-// Subtests and Sub-benchmarks
-//
 package bench
 
 import (
@@ -167,8 +47,8 @@ func Init() {
 	// full test of the package.
 	short = flag.Bool("test.short", false, "run smaller test suite to save time")
 
-	// The failfast flag requests that test execution stop after the first test failure.
-	failFast = flag.Bool("test.failfast", false, "do not start new tests after the first test failure")
+	// // The failfast flag requests that test execution stop after the first test failure.
+	// failFast = flag.Bool("test.failfast", false, "do not start new tests after the first test failure")
 
 	// The directory in which to create profile files and the like. When run from
 	// "go test", the binary always runs in the source directory for the package;
@@ -180,7 +60,7 @@ func Init() {
 	count = flag.Uint("test.count", 1, "run tests and benchmarks `n` times")
 	coverProfile = flag.String("test.coverprofile", "", "write a coverage profile to `file`")
 	matchList = flag.String("test.list", "", "list tests, examples, and benchmarks matching `regexp` then exit")
-	match = flag.String("test.run", "", "run only tests and examples matching `regexp`")
+	// match = flag.String("test.run", "", "run only tests and examples matching `regexp`")
 	memProfile = flag.String("test.memprofile", "", "write an allocation profile to `file`")
 	memProfileRate = flag.Int("test.memprofilerate", 0, "set memory allocation profiling `rate` (see runtime.MemProfileRate)")
 	cpuProfile = flag.String("test.cpuprofile", "", "write a cpu profile to `file`")
@@ -189,7 +69,7 @@ func Init() {
 	mutexProfile = flag.String("test.mutexprofile", "", "write a mutex contention profile to the named file after execution")
 	mutexProfileFraction = flag.Int("test.mutexprofilefraction", 1, "if >= 0, calls runtime.SetMutexProfileFraction()")
 	traceFile = flag.String("test.trace", "", "write an execution trace to `file`")
-	timeout = flag.Duration("test.timeout", 0, "panic test binary after duration `d` (default 0, timeout disabled)")
+	// timeout = flag.Duration("test.timeout", 0, "panic test binary after duration `d` (default 0, timeout disabled)")
 	cpuListStr = flag.String("test.cpu", "", "comma-separated `list` of cpu counts to run each test with")
 	parallel = flag.Int("test.parallel", runtime.GOMAXPROCS(0), "run at most `n` tests in parallel")
 	testlog = flag.String("test.testlogfile", "", "write test action log to `file` (for use only by cmd/go)")
@@ -199,14 +79,14 @@ func Init() {
 
 var (
 	// Flags, registered during Init.
-	short                *bool
-	failFast             *bool
-	outputDir            *string
-	chatty               *bool
-	count                *uint
-	coverProfile         *string
-	matchList            *string
-	match                *string
+	short *bool
+	// failFast             *bool
+	outputDir    *string
+	chatty       *bool
+	count        *uint
+	coverProfile *string
+	matchList    *string
+	// match                *string
 	memProfile           *string
 	memProfileRate       *int
 	cpuProfile           *string
@@ -215,10 +95,10 @@ var (
 	mutexProfile         *string
 	mutexProfileFraction *int
 	traceFile            *string
-	timeout              *time.Duration
-	cpuListStr           *string
-	parallel             *int
-	testlog              *string
+	//	timeout              *time.Duration
+	cpuListStr *string
+	parallel   *int
+	testlog    *string
 
 	cpuList     []int
 	testlogFile *os.File

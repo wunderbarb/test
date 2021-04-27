@@ -1,6 +1,6 @@
-// V0.9.5
+// V0.9.6
 // Author: Diehl E.
-// (C) Sony Pictures Entertainment, Feb 2021
+// (C) Sony Pictures Entertainment, Apr 2021
 
 package test
 
@@ -19,7 +19,7 @@ var Rng *rand.Rand
 
 // init initializes the random number generator.
 func init() {
-	Rng = rand.New(rand.NewSource(time.Now().UnixNano()))
+	Rng = rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404  It is not crypto secure. OK for test
 
 }
 
@@ -48,9 +48,10 @@ const (
 	Small
 )
 
-// RandomID returns a random 16 character, alphanumeric, ID.
+// RandomID returns a random 16-character, alphanumeric, ID.
 func RandomID() string {
-	return RandomAlphaString(16, AlphaNumNoSpace)
+	const sizeID = 16
+	return RandomAlphaString(sizeID, AlphaNumNoSpace)
 }
 
 // RandomName returns a random string with size characters.
@@ -68,16 +69,16 @@ func RandomName(size int) string {
 }
 
 // RandomSlice returns a random slice with size bytes.
-// If size is null, then the number of bytes in the slice is random in the range
+// If size is zero or negative, then the number of bytes in the slice is random in the range
 // 1 to 256 characters.
 //
 // CAUTION: the randomness is not cryptographically secure, thus it should
 // not be used for generating keys.  Secure keys are generated using
 // wunderbarb/crypto package with GenerateNewKey
 func RandomSlice(size int) []byte {
-
-	if size == 0 {
-		size = Rng.Intn(256) + 1
+	const size0 = 256 // max number of bytes for random set.
+	if size <= 0 {
+		size = Rng.Intn(size0) + 1
 	}
 	buffer := make([]byte, size)
 	Rng.Read(buffer)
@@ -101,13 +102,14 @@ func RandomString(size int) string {
 // RandomAlphaString generates a size-character random string which character
 // set depends on the value of t.  if t is not a prpoer value, the returned value
 // is the empty string.
-// If size is null, then the length of the string is random in the range
+// If size is zero or negative, then the length of the string is random in the range
 // 1 to 256 characters.
 //
 // CAUTION: the randomness is not cryptographically secure, thus it should
 // not be used for generating keys.  Secure keys are generated using
 // mypkg/cryptobox package with GenerateNewKey
 func RandomAlphaString(size int, t AlphaNumType) string {
+	const size0 = 256 // max number of bytes for random set.
 	conv := map[AlphaNumType][]byte{
 		All:             []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890 @.!$&_+-:;*?#/\\,()[]{}<>%\""),
 		AllCVS:          []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890 @.!$&_+-:*?#/\\()[]{}<>%\""),
@@ -118,8 +120,8 @@ func RandomAlphaString(size int, t AlphaNumType) string {
 		Caps:            []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
 		Small:           []byte("abcdefghijklmnopqrstuvwxyz"),
 	}
-	if size == 0 {
-		size = Rng.Intn(256) + 1
+	if size <= 0 {
+		size = Rng.Intn(size0) + 1
 	}
 
 	var buffer []byte
@@ -172,6 +174,7 @@ func RandomCSVFile(name string, columns int, rows int, sep rune) error {
 //
 // Deprecated:  should be replaced by RandomFileWithDir.
 func RandomFile(size int, ext string, inTestdata bool) (string, error) {
+	const sizeOfSlices = 1024
 	name := RandomID() + "." + ext
 	if inTestdata {
 		name = "testdata/" + name
@@ -183,7 +186,7 @@ func RandomFile(size int, ext string, inTestdata bool) (string, error) {
 	defer f.Close()
 
 	for i := 0; i < size; i++ {
-		_, err = f.Write(RandomSlice(1024))
+		_, err = f.Write(RandomSlice(sizeOfSlices))
 		if err != nil {
 			return "", err
 		}
@@ -198,6 +201,7 @@ func RandomFile(size int, ext string, inTestdata bool) (string, error) {
 //
 // It returns the name of the generated file (without) the path.
 func RandomFileWithDir(size int, ext string, path string) (string, error) {
+	const sizeOfSlices = 1024
 	name := setExtension(RandomID(), ext)
 	if path != "" {
 		name = filepath.Join(path, name)
@@ -208,7 +212,7 @@ func RandomFileWithDir(size int, ext string, path string) (string, error) {
 	}
 	defer f.Close()
 
-	p := make([]byte, 1024)
+	p := make([]byte, sizeOfSlices)
 	for i := 0; i < size; i++ {
 		Rng.Read(p)
 		_, err = f.Write(p)

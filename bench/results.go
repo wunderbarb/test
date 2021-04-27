@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Modified  by DIEHL E.
-// v0.2.2
+// v0.2.3
 
 package bench
 
@@ -39,8 +39,8 @@ func (r BenchmarkResult) NsPerOp() int64 {
 	return r.T.Nanoseconds() / int64(r.N)
 }
 
-// mbPerSec returns the "MB/s" metric.
-func (r BenchmarkResult) mbPerSec() float64 {
+// MbPerSec returns the "MB/s" metric.
+func (r BenchmarkResult) MbPerSec() float64 {
 	if v, ok := r.Extra["MB/s"]; ok {
 		return v
 	}

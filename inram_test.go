@@ -1,6 +1,6 @@
-// v0.3.1
+// v0.3.2
 // Author: DIEHL E.
-// © Sony Pictures Entertainment, Feb 2021
+// © Sony Pictures Entertainment, Apr 2021
 
 package test
 
@@ -30,6 +30,7 @@ func Test_InRAMWriter_Write(t *testing.T) {
 	require, assert := Describe(t)
 
 	wr := NewInRAMWriter()
+	defer wr.Close()
 	buffer := RandomSlice(256)
 
 	n, err := wr.Write(buffer[:128])

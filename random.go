@@ -1,27 +1,18 @@
-// V0.9.6
+// V0.10.0
 // Author: Diehl E.
-// (C) Sony Pictures Entertainment, Apr 2021
+// © Nov 2024
 
 package test
 
 import (
+	rand1 "crypto/rand"
 	"encoding/csv"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"path"
 	"path/filepath"
-	"time"
+	"strings"
 )
-
-// Rng is a randomly seeded random number generator that can be used for tests.
-// The random number generator is not cryptographically safe.
-var Rng *rand.Rand
-
-// init initializes the random number generator.
-func init() {
-	Rng = rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404  It is not crypto secure. OK for test
-
-}
 
 // AlphaNumType represents the kind of characters
 // that will be generated.
@@ -31,16 +22,16 @@ const (
 	// All requests all the characters from the character set
 	// ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890 @.!$&_+-:;*?#/\\,()[]{}<>%"
 	All AlphaNumType = iota
-	// AllCVS requests the same characters than 'All' at the exception of ; and ,.  It is to be
-	// used when appluing to CVS files.
+	// AllCVS requests the same characters as 'All' at the exception to ; and ,.  It is to be
+	// used when applying to CVS files.
 	AllCVS
-	// AlphaNum requests only characters that are alpha-numerical with space included.
+	// AlphaNum requests only characters that are alphanumerical with space included.
 	AlphaNum
-	// AlphaNumNoSpace requests only characters thaat are alpha-numerical without space.
+	// AlphaNumNoSpace requests only characters that are alphanumerical without space.
 	AlphaNumNoSpace
 	// Alpha requests only characters that are alphabetical with space included.
 	Alpha
-	// AlphaNoSpace requests only characters thaat are alphabetical without space.
+	// AlphaNoSpace requests only characters that are alphabetical without space.
 	AlphaNoSpace
 	// Caps requests only upper characters without space.
 	Caps
@@ -58,11 +49,10 @@ func RandomID() string {
 // If size is null, then the length of the string is random in the range
 // 1 to 256 characters.
 //
-// The character set is ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+// # The character set is ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 //
 // CAUTION: the randomness is not cryptographically secure, thus it should
-// not be used for generating keys.  Secure keys are generated using
-// mypckg/cryptobox package with GenerateNewKey
+// not be used for generating passphrases.
 func RandomName(size int) string {
 
 	return RandomAlphaString(size, AlphaNoSpace)
@@ -71,17 +61,13 @@ func RandomName(size int) string {
 // RandomSlice returns a random slice with size bytes.
 // If size is zero or negative, then the number of bytes in the slice is random in the range
 // 1 to 256 characters.
-//
-// CAUTION: the randomness is not cryptographically secure, thus it should
-// not be used for generating keys.  Secure keys are generated using
-// wunderbarb/crypto package with GenerateNewKey
 func RandomSlice(size int) []byte {
 	const size0 = 256 // max number of bytes for random set.
 	if size <= 0 {
-		size = Rng.Intn(size0) + 1
+		size = rand.IntN(size0) + 1
 	}
 	buffer := make([]byte, size)
-	Rng.Read(buffer)
+	_, _ = rand1.Read(buffer)
 	return buffer
 }
 
@@ -92,22 +78,20 @@ func RandomSlice(size int) []byte {
 // The character set is ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890 @.!$&_+-:;*?#/\\,()[]{}<>%
 //
 // CAUTION: the randomness is not cryptographically secure, thus it should
-// not be used for generating keys.  Secure keys are generated using
-// mypckg/cryptobox package with GenerateNewKey
+// not be used for generating keys.
 func RandomString(size int) string {
 
 	return RandomAlphaString(size, All)
 }
 
 // RandomAlphaString generates a size-character random string which character
-// set depends on the value of t.  if t is not a prpoer value, the returned value
+// set depends on the value of t.  if t is not a proper value, the returned value
 // is the empty string.
 // If size is zero or negative, then the length of the string is random in the range
 // 1 to 256 characters.
 //
 // CAUTION: the randomness is not cryptographically secure, thus it should
-// not be used for generating keys.  Secure keys are generated using
-// mypkg/cryptobox package with GenerateNewKey
+// not be used for generating keys.
 func RandomAlphaString(size int, t AlphaNumType) string {
 	const size0 = 256 // max number of bytes for random set.
 	conv := map[AlphaNumType][]byte{
@@ -121,19 +105,17 @@ func RandomAlphaString(size int, t AlphaNumType) string {
 		Small:           []byte("abcdefghijklmnopqrstuvwxyz"),
 	}
 	if size <= 0 {
-		size = Rng.Intn(size0) + 1
+		size = rand.IntN(size0) + 1
 	}
-
 	var buffer []byte
 	choice, ok := conv[t]
 	if !ok {
 		return ""
 	}
-
-	choiceSizee := len(choice)
+	choiceSize := len(choice)
 	for i := 0; i < size; i++ {
 		// generates the characters
-		s := Rng.Intn(choiceSizee)
+		s := rand.IntN(choiceSize)
 		buffer = append(buffer, choice[s])
 	}
 	return string(buffer)
@@ -148,8 +130,7 @@ func RandomCSVFile(name string, columns int, rows int, sep rune) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-
+	defer func() { _ = f.Close() }()
 	wr := csv.NewWriter(f)
 	wr.Comma = sep
 	for i := 0; i < rows; i++ {
@@ -165,33 +146,6 @@ func RandomCSVFile(name string, columns int, rows int, sep rune) error {
 	}
 	wr.Flush() // do not forget to flush :(,
 	return nil
-}
-
-// RandomFile generates a random binary file of `size` K bytes with
-// a random name and extension `ext`.  If `inTestdata` is true, the file
-// is in "testdata/" subdirectory, else in the current directory.  It
-// returns the name of the generated file.
-//
-// Deprecated:  should be replaced by RandomFileWithDir.
-func RandomFile(size int, ext string, inTestdata bool) (string, error) {
-	const sizeOfSlices = 1024
-	name := RandomID() + "." + ext
-	if inTestdata {
-		name = "testdata/" + name
-	}
-	f, err := os.Create(name)
-	if err != nil {
-		return "", nil
-	}
-	defer f.Close()
-
-	for i := 0; i < size; i++ {
-		_, err = f.Write(RandomSlice(sizeOfSlices))
-		if err != nil {
-			return "", err
-		}
-	}
-	return f.Name(), nil
 }
 
 // RandomFileWithDir generates a random binary file of `size` K bytes with
@@ -210,11 +164,14 @@ func RandomFileWithDir(size int, ext string, path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	p := make([]byte, sizeOfSlices)
 	for i := 0; i < size; i++ {
-		Rng.Read(p)
+		_, err = rand1.Read(p)
+		if err != nil {
+			return "", err
+		}
 		_, err = f.Write(p)
 		if err != nil {
 			return "", err
@@ -223,11 +180,27 @@ func RandomFileWithDir(size int, ext string, path string) (string, error) {
 	return filepath.Base(f.Name()), nil
 }
 
-// setExtension ensures that the extension ext is present at
-// the end of the file.  If ext does not have a trailing '.', it adds
-// the proper extension.
+// SwapCase randomly changes each character to upper or lower case
+func SwapCase(s string) string {
+	const dice = 3
+	var sb strings.Builder
+	for _, r := range s {
+		switch rand.IntN(dice) { //nolint:gosec
+		case 0:
+			sb.WriteRune(toLower(r))
+		case 1:
+			sb.WriteRune(toUpper(r))
+		case dice - 1:
+			sb.WriteRune(r)
+		}
+	}
+	return sb.String()
+}
+
+// setExtension ensures that the extension ext is present at the end of the file.  If ext does not have a
+// trailing '.', it adds the proper extension.
 //
-// Is the same than mypkg/setExtension but need to break cyclic mod.
+// Is the same as mypkg/setExtension but need to break cyclic mod.
 func setExtension(name string, ext string) string {
 	if ext == "" {
 		return name
@@ -238,12 +211,7 @@ func setExtension(name string, ext string) string {
 	return strip(name, ext) + ext
 }
 
-// strip removes the extension if present.
-// @1- ext is the extension to test.  If there is no trailing
-// '.', it is added.
-// returns the file name without the extension if present.
-//
-// Is the same than mypkg/strip but need to break cyclic mod.
+// strip removes from `name` the extension `ext` if present.
 func strip(name string, ext string) string {
 	if ext == "" {
 		return name
@@ -258,4 +226,20 @@ func strip(name string, ext string) string {
 		name = s[:l]
 	}
 	return name
+}
+
+// toUpper converts a rune to upper case if it's a letter
+func toUpper(r rune) rune {
+	if r >= 'a' && r <= 'z' {
+		return r - 'a' + 'A'
+	}
+	return r
+}
+
+// toLower converts a rune to lower case if it's a letter
+func toLower(r rune) rune {
+	if r >= 'A' && r <= 'Z' {
+		return r - 'A' + 'a'
+	}
+	return r
 }

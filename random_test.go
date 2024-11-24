@@ -1,13 +1,14 @@
-// V 0.7.1
+// v0.8.0
 // Author: DIEHL E.
-// (C) Sony Pictures Entertainment, Apr 2021
+// © Nov 2024
 
 package test
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -53,7 +54,7 @@ func Test_test_GenerateName(t *testing.T) {
 
 func Test_test_RandomSlice(t *testing.T) {
 	_, assert := Describe(t)
-	n := rand.Intn(255) + 1
+	n := rand.IntN(255) + 1
 	d := RandomSlice(n)
 	assert.Equal(n, len(d))
 
@@ -73,39 +74,28 @@ func Test_RandomCSVFile(t *testing.T) {
 
 	name := "testdata/" + RandomID() + ".csv"
 
-	err := RandomCSVFile(name, Rng.Intn(10)+1, Rng.Intn(10)+1, ';')
+	err := RandomCSVFile(name, rand.IntN(10)+1, rand.IntN(10)+1, ';')
 	require.NoError(err)
 	assert.FileExists(name)
-	os.Remove(name)
-
+	_ = os.Remove(name)
 	require.Error(RandomCSVFile("bad/"+name, 10, 10, ';'))
-
-}
-
-func Test_RandomFile(t *testing.T) {
-	require, assert := Describe(t)
-
-	n, err := RandomFile(3, "essai", true)
-	require.NoError(err)
-	assert.FileExists(n)
-	os.Remove(n)
 }
 
 func Test_RandomFileWithDir(t *testing.T) {
 	require, assert := Describe(t)
 
-	n, err := RandomFileWithDir(3, "essai", "")
+	n, err := RandomFileWithDir(3, "trial", "")
 	require.NoError(err)
 	assert.FileExists(n)
-	os.Remove(n)
+	_ = os.Remove(n)
 
-	os.MkdirAll("testdata/essai", 0777)
-	n, err = RandomFileWithDir(3, "essai", "testdata/essai")
+	isPanic(os.MkdirAll("testdata/trial", 0777))
+	n, err = RandomFileWithDir(3, "trial", "testdata/trial")
 	require.NoError(err)
-	assert.FileExists(filepath.Join("testdata/essai", n))
-	os.Remove(filepath.Join("testdata/essai", n))
+	assert.FileExists(filepath.Join("testdata/trial", n))
+	_ = os.Remove(filepath.Join("testdata/trial", n))
 
-	_, err = RandomFileWithDir(3, "essai", "testdata/bad")
+	_, err = RandomFileWithDir(3, "trial", "testdata/bad")
 	assert.Error(err)
 }
 
@@ -115,11 +105,25 @@ func Benchmark_RandomSlice(b *testing.B) {
 	}
 
 }
+func Test_SwapCase(t *testing.T) {
+	_, assert := Describe(t)
+
+	s := RandomString(100)
+	s1 := SwapCase(s)
+	assert.NotEqual(s, s1)
+	assert.Equal(strings.ToLower(s), strings.ToLower(s1))
+}
 
 func Benchmark_RandomFile(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		n, _ := RandomFileWithDir(10, "tst", "testdata/essai")
-		os.Remove(filepath.Join("testdata/essai", n))
+		n, _ := RandomFileWithDir(10, "tst", "testdata/trial")
+		_ = os.Remove(filepath.Join("testdata/trial", n))
 	}
 
+}
+
+func isPanic(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

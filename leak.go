@@ -1,6 +1,6 @@
 // v0.1.0
 // Author: DIEHL E.
-// (©) Sony Pictures Entertainment, Apr 2022
+// © Jul 2024
 
 package test
 

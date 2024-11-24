@@ -1,12 +1,11 @@
-// V 0.9.0
+// v0.9.1
 // Author: DIEHL E.
-// (C) Sony Pictures Entertainment, Jan 2021
+// © Sony Pictures Entertainment, Nov 2024
 
 package test
 
 import (
 	"fmt"
-	"os/exec"
 	"strings"
 	"testing"
 
@@ -20,25 +19,6 @@ var (
 	testCounter = 1
 )
 
-// CLI executes the command `app` with the parameters `params`.
-// `expErr` indicates whether an error is expected.  If the expectation
-// is not met, then it outputs the full CLI command that failed.
-//
-// DEPRECATED CLI should be repalced by githyb.com/wunderbarb/syst.Run using
-// option WithVerboseTest.
-func CLI(expErr bool, app string, params ...string) ([]byte, error) {
-	cmd := exec.Command(app, params...)
-	answer, err := cmd.Output()
-	if (err == nil) == expErr {
-		s := app
-		for _, p := range params {
-			s += " " + p
-		}
-		fmt.Printf("failed on: %s\n", s)
-	}
-	return answer, err
-}
-
 // CompareFiles returns true if files f1 and f2 are identical
 func CompareFiles(f1 string, f2 string) bool {
 	cmp := equalfile.New(nil, equalfile.Options{}) // compare using single mode
@@ -46,11 +26,9 @@ func CompareFiles(f1 string, f2 string) bool {
 	return equal
 }
 
-// Describe displays the order of the test, the name of the function
-//  and its optional description provided by 'msg'.  It initializes an assert
-// and a require and returns them.
-func Describe(t *testing.T, msg ...string) (*require.Assertions,
-	*assert.Assertions) {
+// Describe displays the order of the test, the name of the function and its optional description provided by 'msg'.
+// It initializes an assert and require and returns them.
+func Describe(t *testing.T, msg ...string) (*require.Assertions, *assert.Assertions) {
 
 	dispMsg := ""
 	if len(msg) != 0 {
@@ -63,14 +41,15 @@ func Describe(t *testing.T, msg ...string) (*require.Assertions,
 }
 
 // Describeb displays the order of the test, the name of the function
-//  and its optional description provided by 'msg'.
+//
+//	and its optional description provided by 'msg'.
 func Describeb(b *testing.B, msg ...string) {
 
-	dispMsg := ""
+	dspMsg := ""
 	if len(msg) != 0 {
-		dispMsg = msg[0]
+		dspMsg = msg[0]
 	}
 	name := strings.TrimPrefix(b.Name(), "Bench_")
-	fmt.Printf("Bench %d: %s %s\n", testCounter, name, dispMsg)
+	fmt.Printf("Bench %d: %s %s\n", testCounter, name, dspMsg)
 	testCounter++
 }

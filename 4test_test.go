@@ -1,21 +1,12 @@
-// V0.7.2
+// V0.7.3
 // Author: DIEHL E.
-// (C) Sony Pictures Entertainment, Feb 2021
+// © Nov 2024
 
 package test
 
 import (
 	"testing"
 )
-
-func Test_CLI(t *testing.T) {
-	_, assert := Describe(t)
-
-	_, err := CLI(false, "ls")
-	assert.NoError(err)
-	_, err = CLI(false, "ls", "~/Dev1")
-	assert.Error(err)
-}
 
 func Test_CompareFiles(t *testing.T) {
 	_, assert := Describe(t)

@@ -1,14 +1,13 @@
-// v0.2.1
-// Author: DIEHL E.
-// © Sony Pictures Entertainment, Feb 2021
+// v0.2.2
+// Author: wunderbarb
+// © Sony Pictures Entertainment, Nov 2024
 
 package test
 
 import (
 	"bytes"
 	"errors"
-
-	"github.com/aws/aws-sdk-go/aws"
+	"sync"
 )
 
 var (
@@ -23,20 +22,19 @@ type InRAMReader struct {
 	closed bool
 }
 
-// InRAMWriter implemets an io.Writer, io.WriterAt, and io.Closer within RAM memory.
+// InRAMWriter implements an io.Writer, io.WriterAt, and io.Closer within RAM memory.
 type InRAMWriter struct {
-	aws.WriteAtBuffer
+	writeAtBuffer
 	closed     bool
 	currentPos int64
 }
 
 // NewInRAMReader creates a new InRAMReader with the buffer `p`.
 func NewInRAMReader(p []byte) *InRAMReader {
-	irrd := &InRAMReader{
+	return &InRAMReader{
 		Reader: *bytes.NewReader(p),
 		closed: false,
 	}
-	return irrd
 }
 
 // NewInRAMReaderAsString creates a new InRAMReader with the string `s`.
@@ -74,7 +72,7 @@ func NewInRAMWriter() *InRAMWriter {
 	buf := make([]byte, 10)
 
 	return &InRAMWriter{
-		WriteAtBuffer: *aws.NewWriteAtBuffer(buf),
+		writeAtBuffer: *newWriteAtBuffer(buf),
 		closed:        false,
 		currentPos:    0,
 	}
@@ -90,7 +88,7 @@ func (irw *InRAMWriter) Close() error {
 }
 
 func (irw *InRAMWriter) String() string {
-	return string(irw.WriteAtBuffer.Bytes())
+	return string(irw.Bytes())
 }
 
 // Write implements the io.Writer interface.
@@ -98,7 +96,7 @@ func (irw *InRAMWriter) Write(p []byte) (int, error) {
 	if irw.closed {
 		return 0, ErrClosed
 	}
-	n, err := irw.WriteAtBuffer.WriteAt(p, irw.currentPos)
+	n, err := irw.WriteAt(p, irw.currentPos)
 	irw.currentPos += int64(n)
 	return n, err
 }
@@ -108,5 +106,53 @@ func (irw *InRAMWriter) WriteAt(p []byte, pos int64) (int, error) {
 	if irw.closed {
 		return 0, ErrClosed
 	}
-	return irw.WriteAtBuffer.WriteAt(p, pos)
+	return irw.WriteAt(p, pos)
+}
+
+// A writeAtBuffer provides an in memory buffer supporting the io.WriterAt interface
+type writeAtBuffer struct {
+	buf []byte
+	m   sync.Mutex
+
+	// GrowthCoeff defines the growth rate of the internal buffer. By
+	// default, the growth rate is 1, where expanding the internal
+	// buffer will allocate only enough capacity to fit the new expected
+	// length.
+	GrowthCoeff float64
+}
+
+// newWriteAtBuffer creates a writeAtBuffer with an internal buffer
+// provided by buf.
+func newWriteAtBuffer(buf []byte) *writeAtBuffer {
+	return &writeAtBuffer{buf: buf}
+}
+
+// WriteAt writes a slice of bytes to a buffer starting at the position provided
+// The number of bytes written will be returned, or error. Can overwrite previous
+// written slices if the write ats overlap.
+func (b *writeAtBuffer) WriteAt(p []byte, pos int64) (n int, err error) {
+	pLen := len(p)
+	expLen := pos + int64(pLen)
+	b.m.Lock()
+	defer b.m.Unlock()
+	if int64(len(b.buf)) < expLen {
+		if int64(cap(b.buf)) < expLen {
+			if b.GrowthCoeff < 1 {
+				b.GrowthCoeff = 1
+			}
+			newBuf := make([]byte, expLen, int64(b.GrowthCoeff*float64(expLen)))
+			copy(newBuf, b.buf)
+			b.buf = newBuf
+		}
+		b.buf = b.buf[:expLen]
+	}
+	copy(b.buf[pos:], p)
+	return pLen, nil
+}
+
+// Bytes returns a slice of bytes written to the buffer.
+func (b *writeAtBuffer) Bytes() []byte {
+	b.m.Lock()
+	defer b.m.Unlock()
+	return b.buf
 }

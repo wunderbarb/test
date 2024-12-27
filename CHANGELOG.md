@@ -1,4 +1,12 @@
 # changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
+## [0.7.1] - 2024-11-24
+### Changed 
+- Removed dependency to `aws-sdk-go`
+- Bumped to latest versions
 ## [0.7.0] - 2024-11-23
 ### Added
 - `SwapCase` randomly swaps the case of the alphabetic characters in a string.  It is useful to test case-insensitive functions.
